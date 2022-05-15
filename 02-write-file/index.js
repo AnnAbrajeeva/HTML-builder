@@ -3,17 +3,28 @@ const path = require('path');
 const { stdin, stdout } = process;
 const readline = require('readline');
 
-const writeStream = fs.createWriteStream(path.join(__dirname, 'text.txt'));
-const readText = readline.createInterface(stdin, stdout);
-readText.write('Please, write something here \n');
-readText.on('line', (text) => {
-  if (text === 'exit') {
-    readText.close();
-    return;
-  }
-  writeStream.write(text + '\n');
-});
+const file = path.join(__dirname, 'text.txt');
 
-readText.on('close', () => {
-  console.log('Bye!');
-});
+async function readAndWrite(file) {
+  const writeStream = fs.createWriteStream(file);
+  const readText = readline.createInterface(stdin, stdout);
+  await question();
+ 
+  readText.on('close', () => {
+    console.log('\nBye!');
+  });
+
+  async function question() {
+    readText.question('Please, type something here ', (answer) => {
+      if (answer !== 'exit') {
+        writeStream.write(answer + '\n');
+        question();
+      } else {
+        readText.close();
+        return;
+      }
+    });
+  }
+}
+
+readAndWrite(file);
