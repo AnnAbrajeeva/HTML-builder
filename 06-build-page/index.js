@@ -118,11 +118,52 @@ const tempHtml = path.join(__dirname, 'template.html');
 const htmlComponentsFolder = path.join(__dirname, 'components');
 const targetFile = path.join(__dirname, 'project-dist/index.html');
 
+// async function readFileTemplate() {
+//   let temp;
+//   await fs.readFile(
+//     path.join(__dirname, 'template.html'),
+//     'utf-8',
+//     (err, data) => {
+//       if (err) throw err;
+//       readComponents(data);
+//     }
+//   );
+//   return temp;
+// }
+
+// function readComponents(temp) {
+//   fs.readdir(
+//     path.join(__dirname, 'components'),
+//     { withFileTypes: true },
+//     (err, data) => {
+//       if (err) throw err;
+//       data.forEach((file) => {
+//         if (file.isFile() && path.extname(file.name) === '.html') {
+//           fs.readFile(
+//             path.join(__dirname, 'components', file.name),
+//             'utf-8',
+//             (err, data) => {
+//               if (err) throw err;
+//               const name = file.name.split('.');
+//               const reg = `{{${name[0]}}}`;
+//               temp = temp.replace(reg, data);
+//               const target = path.join(__dirname, 'project-dist/index.html');
+//               fs.writeFile(target, temp, (err) => {
+//                 if (err) throw err;
+//               });
+//             }
+//           );
+//         }
+//       });
+//     }
+//   );
+// }
+
 async function joinHtml(template, from, to) {
   try {
     let temp = await fsPromises.readFile(template, 'utf-8');
     const data = await fsPromises.readdir(from, { withFileTypes: true });
-    data.forEach((file) => {
+    for (let file of data) {
       if (file.isFile() && path.extname(file.name) === '.html') {
         fs.readFile(path.join(from, file.name), 'utf-8', (err, data) => {
           if (err) throw err;
@@ -136,7 +177,7 @@ async function joinHtml(template, from, to) {
           }
         });
       }
-    });
+    }
   } catch (error) {
     console.log(error);
   }
@@ -185,6 +226,7 @@ const assetsFolder = path.join(__dirname, 'project-dist/assets');
 
 createFolder();
 joinCss(cssFolder, cssTargetFolder);
+// readFileTemplate();
 joinHtml(tempHtml, htmlComponentsFolder, targetFile);
 clearAssetsFolder(assetsFolder);
 copyDir(
