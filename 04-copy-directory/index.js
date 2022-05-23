@@ -1,22 +1,45 @@
 const path = require('path');
-const fs = require('fs/promises');
+const fsPromises = require('fs/promises');
+const fs = require('fs');
 
 async function copyDir(from, to) {
-  await fs.mkdir(to, { recursive: true });
+  await clearAssetsFolder(to);
+  await fsPromises.mkdir(to, { recursive: true });
+  
 
   try {
-    const files = await fs.readdir(from);
+    const files = await fsPromises.readdir(from);
     for (let file of files) {
-      const stats = await fs.stat(path.join(from, file));
+      const stats = await fsPromises.stat(path.join(from, file));
       if (stats.isDirectory()) {
         copyDir(path.join(from, file), path.join(to, file));
       } else {
-        fs.copyFile(path.join(from, file), path.join(to, file));
+        fsPromises.copyFile(path.join(from, file), path.join(to, file));
       }
     }
   } catch (error) {
     console.log(error.message);
   }
+}
+
+async function clearAssetsFolder(folder) {
+  await fsPromises
+    .access(folder)
+    .then(() => {
+      fs.readdir(path.join(folder), { withFileTypes: true }, (err, data) => {
+        if (err) console.log(err);
+        data.forEach((file) => {
+          if (file.isFile()) {
+            fsPromises.unlink(path.join(folder, file.name));
+          } else {
+            clearAssetsFolder(path.join(folder, file.name));
+          }
+        });
+      });
+    })
+    .catch((err) => {
+      if (err) return;
+    });
 }
 
 const output = path.join(__dirname, 'files');

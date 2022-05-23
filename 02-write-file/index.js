@@ -11,12 +11,12 @@ async function readAndWrite(file) {
   await question();
  
   readText.on('close', () => {
-    console.log('\nBye!');
+    console.log('Bye!');
   });
 
   async function question() {
-    readText.question('Please, type something here ', (answer) => {
-      if (answer !== 'exit') {
+    readText.question('Please, type something here\n', (answer) => {
+      if (answer.trim() !== 'exit') {
         writeStream.write(answer + '\n');
         question();
       } else {

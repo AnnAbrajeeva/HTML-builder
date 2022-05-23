@@ -2,76 +2,11 @@ const path = require('path');
 const fs = require('fs');
 const fsPromises = require('fs/promises');
 
-// async function readFileTemplate(file) {
-//   let temp;
-//   const data = await fsPromises.readFile(file, "utf-8");
-//   readComponents(data);
-// }
-
-// async function readComponents(componentsFolder, temp, extname) {
-//   try {
-//     let data = await fsPromises.readdir(
-//       componentsFolder,
-//     { withFileTypes: true })
-
-//     data.forEach((file) => {
-//       if (file.isFile() && path.extname(file.name) === extname) {
-//         let file = fs.readFile(
-//           path.join(__dirname, "components", file.name),
-//           "utf-8",
-//       }
-
-//   } catch (error) {
-
-//   }
-
-//       data.forEach((file) => {
-//         if (file.isFile() && path.extname(file.name) === ".html") {
-//           fs.readFile(
-//             path.join(__dirname, "components", file.name),
-//             "utf-8",
-//             (err, data) => {
-//               if (err) throw err;
-//               const name = file.name.split(".");
-//               const reg = `{{${name[0]}}}`;
-//               temp = temp.replace(reg, data);
-//               const target = path.join(__dirname, "project-dist/index.html");
-//               fs.writeFile(target, temp, (err) => {
-//                 if (err) throw err;
-//               });
-//             }
-//           );
-//         }
-//       });
-//     }
-//   );
-// }
-
-// async function joinCss() {
-//   let allStyles = "";
-//   fs.readdir(
-//     path.join(__dirname, "styles"),
-//     { withFileTypes: true },
-//     (err, data) => {
-//       if (err) console.log(err.message);
-//       data.forEach((file) => {
-//         const writeStream = fs.createWriteStream(
-//           path.join(__dirname, "project-dist/style.css")
-//         );
-//         if (file.isFile() && path.extname(file.name) === ".css") {
-//           const stream = fs.createReadStream(
-//             path.join(__dirname, "styles", file.name),
-//             "utf-8"
-//           );
-//           stream.on("data", (chunk) => {
-//             allStyles += chunk;
-//             writeStream.write(allStyles);
-//           });
-//         }
-//       });
-//     }
-//   );
-// }
+const tempHtml = path.join(__dirname, 'template.html');
+const htmlComponentsFolder = path.join(__dirname, 'components');
+const targetFile = path.join(__dirname, 'project-dist/index.html');
+const cssFolder = path.join(__dirname, 'styles');
+const cssTargetFolder = path.join(__dirname, 'project-dist/style.css');
 
 async function createFolder() {
   await fsPromises.mkdir(path.join(__dirname, 'project-dist'), {
@@ -79,24 +14,7 @@ async function createFolder() {
   });
 }
 
-// async function createAllProject() {
-//   await createFolder();
-//   readFileTemplate(tempHtml);
-//   joinCss();
-//   clearAssetsFolder(path.join(__dirname, "project-dist/assets"));
-//   copyDir(
-//     path.join(__dirname, "assets"),
-//     path.join(__dirname, "project-dist/assets")
-//   );
-// }
-
-// createAllProject();
-
-const cssFolder = path.join(__dirname, 'styles');
-const cssTargetFolder = path.join(__dirname, 'project-dist/style.css');
-
 async function joinCss(from, to) {
-  let temp = '';
   try {
     const writeStream = fs.createWriteStream(to);
     const data = await fsPromises.readdir(from, { withFileTypes: true });
@@ -104,8 +22,7 @@ async function joinCss(from, to) {
       if (file.isFile() && path.extname(file.name) === '.css') {
         const stream = fs.createReadStream(path.join(from, file.name), 'utf-8');
         stream.on('data', (chunk) => {
-          temp += chunk;
-          writeStream.write(temp);
+          writeStream.write(`${chunk}\n`);
         });
       }
     });
@@ -113,51 +30,6 @@ async function joinCss(from, to) {
     console.log(error);
   }
 }
-
-const tempHtml = path.join(__dirname, 'template.html');
-const htmlComponentsFolder = path.join(__dirname, 'components');
-const targetFile = path.join(__dirname, 'project-dist/index.html');
-
-// async function readFileTemplate() {
-//   let temp;
-//   await fs.readFile(
-//     path.join(__dirname, 'template.html'),
-//     'utf-8',
-//     (err, data) => {
-//       if (err) throw err;
-//       readComponents(data);
-//     }
-//   );
-//   return temp;
-// }
-
-// function readComponents(temp) {
-//   fs.readdir(
-//     path.join(__dirname, 'components'),
-//     { withFileTypes: true },
-//     (err, data) => {
-//       if (err) throw err;
-//       data.forEach((file) => {
-//         if (file.isFile() && path.extname(file.name) === '.html') {
-//           fs.readFile(
-//             path.join(__dirname, 'components', file.name),
-//             'utf-8',
-//             (err, data) => {
-//               if (err) throw err;
-//               const name = file.name.split('.');
-//               const reg = `{{${name[0]}}}`;
-//               temp = temp.replace(reg, data);
-//               const target = path.join(__dirname, 'project-dist/index.html');
-//               fs.writeFile(target, temp, (err) => {
-//                 if (err) throw err;
-//               });
-//             }
-//           );
-//         }
-//       });
-//     }
-//   );
-// }
 
 async function joinHtml(template, from, to) {
   try {
@@ -226,7 +98,6 @@ const assetsFolder = path.join(__dirname, 'project-dist/assets');
 
 createFolder();
 joinCss(cssFolder, cssTargetFolder);
-// readFileTemplate();
 joinHtml(tempHtml, htmlComponentsFolder, targetFile);
 clearAssetsFolder(assetsFolder);
 copyDir(
