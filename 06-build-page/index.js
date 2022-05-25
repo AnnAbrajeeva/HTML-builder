@@ -37,17 +37,20 @@ async function joinHtml(template, from, to) {
     const data = await fsPromises.readdir(from, { withFileTypes: true });
     for (let file of data) {
       if (file.isFile() && path.extname(file.name) === '.html') {
-        fs.readFile(path.join(from, file.name), 'utf-8', (err, data) => {
-          if (err) throw err;
-          if (data) {
-            const name = file.name.split('.');
-            const reg = `{{${name[0]}}}`;
-            temp = temp.replace(reg, data);
-            fs.writeFile(to, temp, (err) => {
-              if (err) throw err;
-            });
-          }
-        });
+        let tag = await fsPromises.readFile(
+          path.join(from, file.name),
+          'utf-8'
+        );
+
+        if (data) {
+          const name = file.name.split('.');
+          const reg = `{{${name[0]}}}`;
+          temp = temp.replace(reg, tag);
+
+          fs.writeFile(to, temp, (err) => {
+            if (err) throw err;
+          });
+        }
       }
     }
   } catch (error) {
